@@ -1,3 +1,4 @@
+-- 初始化sql
 create table reqs(
   rec_id int(11) primary key auto_increment,
   from_ip varchar(50),
