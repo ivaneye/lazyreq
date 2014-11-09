@@ -4,13 +4,23 @@
             [compojure.route :as route]
             [clojure.string :as str]
             [cronj.core :as c]
-            [lazyreq.util.loader :as loader]
+            [lazyreq.util.loader :refer :all]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]))
 
+(def mapping-cfg (:mappings cfg))
+
 (defn- do-require [s]
-  (println "======" s)
-  (require [(symbol s)])
-  s)
+  (if (vector? s)
+    (doseq [p s]
+      (require [(symbol p)]))
+    (require [(symbol s)])))
+
+(doseq [c mapping-cfg]
+  (do-require (:core c))
+  (do-require (:clojure-pres c))
+  (do-require (:clojure-errs c))
+  (do-require (:clojure-posts c)))
+(do-require (:tasks cfg))
 
 (defn- invoke [funs args]
   (if (seq funs)
@@ -18,21 +28,23 @@
     args))
 
 (defn wrap-invoke [cfg args]
-  (let [core (resolve (symbol (str (do-require (:core cfg)) "/core")))
-        pres (map #(resolve (symbol (str (do-require %) "/pre"))) (:clojure-pres cfg))
-        errs (map #(partial (resolve (symbol (str (do-require %) "/err"))) args) (:clojure-errs cfg))
+  (let [core (resolve (symbol (str (:core cfg) "/core")))
+        pres (map #(resolve (symbol (str % "/pre"))) (:clojure-pres cfg))
+        errs (map #(partial (resolve (symbol (str % "/err"))) args) (:clojure-errs cfg))
         jpres (map #(fn [x] (.pre (.newInstance (resolve (symbol %))) x)) (:java-pres cfg))
         jerrs (map #(partial (fn [a b] (.err (.newInstance (resolve (symbol %))) a b)) args) (:java-errs cfg))
         invoke-pres (concat pres jpres)
         invoke-errs (concat errs jerrs)]
+    (println "2222" (:clojure-pres cfg) invoke-pres)
     (try
       (let [param (invoke invoke-pres args)
-            posts (map #(partial (resolve (symbol (str (do-require %) "/post"))) param) (:clojure-posts cfg))
+            posts (map #(partial (resolve (symbol (str % "/post"))) param) (:clojure-posts cfg))
             jposts (map #(partial (fn [a b] (.post (.newInstance (resolve (symbol %))) a b)) param) (:java-posts cfg))
-            inner-errs (map #(partial (resolve (symbol (str (do-require %) "/err"))) param) (:clojure-errs cfg))
+            inner-errs (map #(partial (resolve (symbol (str % "/err"))) param) (:clojure-errs cfg))
             inner-jerrs (map #(partial (fn [a b] (.err (.newInstance (resolve (symbol %))) a b)) param) (:java-errs cfg))
             invoke-posts (concat posts jposts)
             invoke-inner-errs (concat inner-errs inner-jerrs)]
+        (println "3333" cfg args)
         (try (invoke invoke-posts (core param))
              (catch Exception e1
                (invoke invoke-inner-errs e1)))
@@ -45,30 +57,33 @@
   (fun))
 
 ;日终
-(def cj (c/cronj :entries (vec (map #(invoke-task (resolve (symbol (str (do-require %) "/task")))) (:tasks loader/cfg)))))
+(def cj (c/cronj :entries (vec (map #(invoke-task (resolve (symbol (str % "/task")))) (:tasks cfg)))))
 
 (defn recall []
   (c/start! cj))
 
-;(defmacro route [mp]
-;   `(~(:method mp) ~(:url mp) ~'request
-;        (wrap-invoke ~mp ~'request)))
-;
-;(defmacro defreqmap [& mps]
-;  `(defroutes app-routes
-;       ~@(map #(route %) mps)))
-;
-;(defreqmap {:url           "/xmlrpc"
-;            :method     POST
-;            :clojure-pres  ["lazyreq.pres.resolve-body" "lazyreq.pres.format-header" "lazyreq.pres.next-url"]
-;            :clojure-errs  ["lazyreq.errs.xmlrpc-err"]
-;            :clojure-posts ["lazyreq.posts.ungzip" "lazyreq.posts.save-resp"]
-;            :core          "lazyreq.cores.xmlrpc"})
+(defmethod method
+           "POST"
+           [arg]
+  (POST (:url arg) request
+        (wrap-invoke arg request)))
 
-(defroutes app-routes
-  (ANY "/xmlrpc" request
-       (wrap-invoke loader/mapping-cfg request))
-  (route/not-found "Not Found"))
+(defmethod method
+           "GET"
+           [arg]
+  (GET (:url arg) request
+        (wrap-invoke arg request)))
+
+(defmethod method
+           "ANY"
+           [arg]
+  (ANY (:url arg) request
+        (wrap-invoke arg request)))
+
+(defmacro functionize [macro]
+  `(fn [& args#] (eval (cons '~macro (cons 'app-routes args#)))))
+
+(apply (functionize defroutes) (map method mapping-cfg))
 
 (def app
   (wrap-defaults app-routes {}))
