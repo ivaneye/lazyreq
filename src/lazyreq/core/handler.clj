@@ -35,7 +35,6 @@
         jerrs (map #(partial (fn [a b] (.err (.newInstance (resolve (symbol %))) a b)) args) (:java-errs cfg))
         invoke-pres (concat pres jpres)
         invoke-errs (concat errs jerrs)]
-    (println "2222" (:clojure-pres cfg) invoke-pres)
     (try
       (let [param (invoke invoke-pres args)
             posts (map #(partial (resolve (symbol (str % "/post"))) param) (:clojure-posts cfg))
@@ -44,7 +43,6 @@
             inner-jerrs (map #(partial (fn [a b] (.err (.newInstance (resolve (symbol %))) a b)) param) (:java-errs cfg))
             invoke-posts (concat posts jposts)
             invoke-inner-errs (concat inner-errs inner-jerrs)]
-        (println "3333" cfg args)
         (try (invoke invoke-posts (core param))
              (catch Exception e1
                (invoke invoke-inner-errs e1)))
