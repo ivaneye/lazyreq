@@ -12,7 +12,7 @@
   (if (vector? s)
     (doseq [p s]
       (require [(symbol p)]))
-    (require [(symbol s)])))
+    (if s (require [(symbol s)]))))
 
 (def mapping-cfg (:mappings cfg))
 
