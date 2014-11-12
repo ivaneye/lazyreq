@@ -6,6 +6,7 @@
 (defn- save-req [req result invoke_by]
       (db/update-req (assoc req :response (str result)
                                     :status (:status result)
+                                    :pre_status (:status result)
                                     :update_time (Date.)
                                     :invoke_by invoke_by)))
 

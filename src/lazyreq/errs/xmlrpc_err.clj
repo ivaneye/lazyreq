@@ -13,13 +13,14 @@
                       :header (str header)
                       :body body
                       :status 500
+                      :pre_status 500
                       :invoke_by invoke_by
                       :add_time date
                       :update_time date})
-      (if (= 200 (:status old-req))
-        (read-string (:response old-req))
-        (db/update-req (assoc old-req :update_time date))
-        ))))
+      (db/update-req (assoc
+                         (assoc old-req :update_time date)
+                       :pre_status 500)))
+    old-req))
 
 (defn err [req e]
   (let [url (:next-url req)
