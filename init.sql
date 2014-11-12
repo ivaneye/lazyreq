@@ -2,9 +2,11 @@
 create table reqs(
   rec_id int(11) primary key auto_increment,
   from_ip varchar(50),
-  url varchar(3000) comment '实际要请求的url',
+  url text comment '实际要请求的url',
+  url_md5 varchar(100) comment '加密后的url,作为索引使用',
   header text comment '请求的header',
-  body varchar(12000) comment '请求体',
+  body text comment '请求体',
+  body_md5 varchar(100) comment '加密后的body,作为索引使用',
   response text comment '响应结果',
   status int(10) comment '请求的http状态',
   pre_status int(10) comment '前一次请求的状态,如果失败,日终执行',
@@ -13,5 +15,5 @@ create table reqs(
   update_time datetime
 );
 
-create index idx_url_body on reqs(url,body);
+create index idx_url_body on reqs(url_md5,body_md5);
 create index idx_pre_status on reqs(pre_status);
