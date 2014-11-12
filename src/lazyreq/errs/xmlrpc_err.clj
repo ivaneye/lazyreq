@@ -17,14 +17,15 @@
                       :invoke_by invoke_by
                       :add_time date
                       :update_time date})
-      (db/update-req (assoc
+      (do
+        (db/update-req (assoc
                          (assoc old-req :update_time date)
-                       :pre_status 500)))
-    old-req))
+                       :pre_status 500))
+        (read-string (:response old-req))))))
 
 (defn err [req e]
   (let [url (:next-url req)
         header (:headers req)
         body (:body req)]
-    (.printStackTrace e)
+    (println req (.printStackTrace e))
     (return-old-req url header body (:remote-addr req) 1)))

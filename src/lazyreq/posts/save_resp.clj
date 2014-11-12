@@ -20,7 +20,7 @@
 
       (db/update-req (assoc old-req :response (str result)
                                     :status (:status result)
-                                    :pre_status (:stack result)
+                                    :pre_status (:status result)
                                     :update_time date
                                     :invoke_by invoke_by)))
     result))
