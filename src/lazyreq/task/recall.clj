@@ -16,7 +16,8 @@
     (doseq [req unsuc-reqs]
       (try (let [result (client/post (:url req)
                    {:headers (read-string (:header req))
-                    :body    (:body req)})]
+                    :body    (:body req)
+                    :decompress-body false})]
              (save-req req result 2))
            (catch Exception e
              (.printStackTrace e)))))
