@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="ReplState" timestamp="1415862414049">{:repl-history {:ide [], :local [&quot;(doc read-raw)&quot; &quot;(doc make)&quot; &quot;(doc load-file)&quot; &quot;(doc load)&quot; &quot;(def a [1 2 3 4 5])&quot; &quot;(doseq [s a]\n  :let [p s]\n  (println p))&quot; &quot;(doseq [s a\n        :let [p s]]\n  (println p))&quot; &quot;(doc doseq)&quot;], :remote []}}</component>
-</project>
-
