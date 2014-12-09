@@ -10,13 +10,13 @@
                  [korma "0.3.0"]
                  [mysql/mysql-connector-java "5.1.33"]]
   :plugins [[lein-ring "0.8.13"]]
-  :ring {:init     lazyreq.core.handler/recall
-          :handler lazyreq.core.handler/app}
+  :ring {:init     lazyreq.core.core/recall
+          :handler lazyreq.core.core/app}
   :profiles
   {:uberjar {:aot :all}
    :production
     {:ring
-      {:init lazyreq.core.handler/recall
+      {:init lazyreq.core.core/recall
         :open-browser? false, :stacktraces? false, :auto-reload? false}},
     :dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                         [ring-mock "0.1.5"]]}})

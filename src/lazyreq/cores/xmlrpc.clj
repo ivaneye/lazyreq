@@ -9,4 +9,5 @@
         body (:body req)]
     (client/post url
                  {:headers header
-                  :body    body})))
+                  :body    body
+                  :decompress-body false})))

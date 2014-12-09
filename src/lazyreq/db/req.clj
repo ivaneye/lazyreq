@@ -27,7 +27,7 @@
                  (limit 1))))
 
 (defn list-unsuc-req []
-  (select reqs (where {:status [not= 200]})))
+  (select reqs (where {:pre_status [not= 200]})))
 
 
 (defn list-req []

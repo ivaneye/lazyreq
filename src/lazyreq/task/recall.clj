@@ -6,6 +6,7 @@
 (defn- save-req [req result invoke_by]
       (db/update-req (assoc req :response (str result)
                                     :status (:status result)
+                                    :pre_status (:status result)
                                     :update_time (Date.)
                                     :invoke_by invoke_by)))
 
@@ -15,13 +16,14 @@
     (doseq [req unsuc-reqs]
       (try (let [result (client/post (:url req)
                    {:headers (read-string (:header req))
-                    :body    (:body req)})]
+                    :body    (:body req)
+                    :decompress-body false})]
              (save-req req result 2))
            (catch Exception e
              (.printStackTrace e)))))
   (println (str "End" (:output opts)) ": " t))
 
-(defn task []
+(def task
   {:id "recall-xmlrpc"
    :handler recall-xmlrpc
    :schedule "0 /30 * * * * *"
