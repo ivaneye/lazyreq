@@ -23,7 +23,7 @@
              (.printStackTrace e)))))
   (println (str "End" (:output opts)) ": " t))
 
-(defn task []
+(def task
   {:id "recall-xmlrpc"
    :handler recall-xmlrpc
    :schedule "0 /30 * * * * *"

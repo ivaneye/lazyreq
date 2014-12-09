@@ -3,6 +3,7 @@
   (:require [lazyreq.db.req :as db]
             [lazyreq.util.md5 :as md5]))
 
+(set! *warn-on-reflection* true)
 
 (defn- return-old-req [url header body remote-addr invoke_by]
   (let [old-req (db/find-one-req {:url_md5 (md5/encode url)
