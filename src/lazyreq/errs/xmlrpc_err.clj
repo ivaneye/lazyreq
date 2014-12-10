@@ -30,6 +30,7 @@
 (defn err [req e]
   (let [url (:next-url req)
         header (:headers req)
-        body (:body req)]
+        body (:body req)
+        remote-addr (get req :X-Real-IP (:remote-addr req))]
     (println req (.printStackTrace e))
-    (return-old-req url header body (:remote-addr req) 1)))
+    (return-old-req url header body remote-addr 1)))
