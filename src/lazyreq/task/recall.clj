@@ -1,7 +1,10 @@
 (ns lazyreq.task.recall
   (:import (java.util Date))
   (:require [lazyreq.db.req :as db]
+            [taoensso.timbre :as timbre :refer [log debug info error with-log-level with-logging-config]]
             [clj-http.client :as client]))
+
+(timbre/refer-timbre)
 
 (defn- save-req [req result invoke_by]
       (db/update-req (assoc req :response (str result)
@@ -11,7 +14,7 @@
                                     :invoke_by invoke_by)))
 
 (defn recall-xmlrpc [t opts]
-  (println (str "Start" (:output opts)) ": " t)
+  (info "recall Start" (:output opts) ": " t)
   (let [unsuc-reqs (db/list-unsuc-req)]
     (doseq [req unsuc-reqs]
       (try (let [result (client/post (:url req)
@@ -21,7 +24,7 @@
              (save-req req result 2))
            (catch Exception e
              (.printStackTrace e)))))
-  (println (str "End" (:output opts)) ": " t))
+  (info "recall End" (:output opts) ": " t))
 
 (def task
   {:id "recall-xmlrpc"

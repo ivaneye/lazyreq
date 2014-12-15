@@ -3,8 +3,6 @@
   (:require [lazyreq.db.req :as db]
             [lazyreq.util.md5 :as md5]))
 
-(set! *warn-on-reflection* true)
-
 (defn- return-old-req [url header body remote-addr invoke_by]
   (let [old-req (db/find-one-req {:url_md5 (md5/encode url)
                                   :body_md5 (md5/encode body)})
@@ -27,10 +25,9 @@
                        :pre_status 500))
         (read-string (:response old-req))))))
 
-(defn err [req e]
+(defn err [req ^Exception e]
   (let [url (:next-url req)
         header (:headers req)
         body (:body req)
         remote-addr (get req :X-Real-IP (:remote-addr req))]
-    (println req (.printStackTrace e))
     (return-old-req url header body remote-addr 1)))

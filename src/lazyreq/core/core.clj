@@ -12,19 +12,28 @@
             [lazyreq.posts.uncookie :as uncookie]
             [lazyreq.cores.xmlrpc :as xmlrpc]
             [lazyreq.errs.xmlrpc-err :as xmlrpc-err]
+            [taoensso.timbre :as timbre :refer [log debug info error with-log-level with-logging-config]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]))
+
+(timbre/refer-timbre)
 
 (defn call-xmlrpc
   "调用rpc核心逻辑方法,分别调用pre方法->core方法->post方法来执行逻辑"
   [req]
+  (info "call-xmlrpc START and uri = " (:uri req))
     (try
       (let [new-req (->> req resolve-body/pre format-header/pre next-url/pre)]
         (try
-          (save-resp/post new-req (uncookie/post new-req (xmlrpc/core new-req)))
+          (let [result (save-resp/post new-req (uncookie/post new-req (xmlrpc/core new-req)))]
+            (info "call-xmlrpc END and uri = " (:uri req))
+              result)
              (catch Exception e1
+               (error "call-xmlrpc CORE/POST ERR and uri = " (:uri req))
+               (error (.printStackTrace e1))
                (xmlrpc-err/err new-req e1))))
       (catch Exception e
-        (println req (.printStackTrace e)))))
+        (error "call-xmlrpc PRE ERR and uri = " (:uri req))
+        (error (.printStackTrace e)))))
 
 ;日终
 (def cj (c/cronj :entries [recall/task]))
@@ -35,7 +44,7 @@
 
 (defroutes app-routes
   (POST "/xmlrpc" request (call-xmlrpc request))
-  (route/not-found "Not Found"))
+  (route/not-found (fn [req] (info "uri \"" (:uri req) "\" not found") "Not Found")))
 
 (def app
   (wrap-defaults app-routes {}))

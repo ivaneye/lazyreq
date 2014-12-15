@@ -12,9 +12,9 @@
                             (remove #(> 2 (val %)))
                             (map first))]
         (throw
-          (IllegalArgumentException.
-            (format "Duplicate keys: %s"
-                    (clojure.string/join ", " duplicates))))))))
+         (IllegalArgumentException.
+          (format "Duplicate keys: %s"
+                  (clojure.string/join ", " duplicates))))))))
 
 (defmacro defdb
   "定义数据库配置"
@@ -29,10 +29,11 @@
      (def ~'cfg args#)))
 
 (defn load-config [file]
-(binding [*ns* (find-ns 'lazyreq.util.loader)]
-  (try (load-file (.getAbsolutePath (io/file (io/resource file))))
-       (catch Exception e
-         (throw (Exception. (format "Error loading %s" file) e))))))
+  (println "load-config " file " start")
+  (binding [*ns* (find-ns 'lazyreq.util.loader)]
+    (try (load-file (.getAbsolutePath (io/file (io/resource file))))
+      (catch Exception e
+        (throw (Exception. (format "Error loading %s" file) e))))))
 
 (defmulti method (fn [arg] (:method arg)))
 
