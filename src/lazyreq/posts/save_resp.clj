@@ -34,7 +34,7 @@
   (let [url (:next-url req)
         header (:headers req)
         body (:body req)
-        remote-addr (get req "x-real-ip" (:remote-addr req))]
+        remote-addr (get header "x-real-ip" (:remote-addr req))]
     (save-req url header body remote-addr resp 1)))
 
 
