@@ -12,6 +12,7 @@
             [lazyreq.posts.uncookie :as uncookie]
             [lazyreq.cores.xmlrpc :as xmlrpc]
             [lazyreq.errs.xmlrpc-err :as xmlrpc-err]
+            [ring.util.response :refer [charset]]
             [taoensso.timbre :as timbre :refer [log debug info error with-log-level with-logging-config]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]))
 
@@ -26,11 +27,11 @@
         (try
           (let [result (save-resp/post new-req (uncookie/post new-req (xmlrpc/core new-req)))]
             (info "call-xmlrpc END and uri = " (:uri req))
-              result)
+              (charset result "UTF-8"))
              (catch Exception e1
                (error "call-xmlrpc CORE/POST ERR and uri = " (:uri req))
                (error (.printStackTrace e1))
-               (xmlrpc-err/err new-req e1))))
+               (charset (xmlrpc-err/err new-req e1) "UTF-8"))))
       (catch Exception e
         (error "call-xmlrpc PRE ERR and uri = " (:uri req))
         (error (.printStackTrace e)))))
